@@ -1,0 +1,302 @@
+<html>
+<head>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Calendar</title>
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        
+    </body>
+    </html>
+</head>
+<body>
+
+<script>function hideButtons() {
+    var loginButtons = document.getElementById("login-buttons");
+    loginButtons.style.display = "none";
+}
+
+function hideMonthList() {
+    var monthList = document.getElementById("month-list");
+    monthList.classList.remove("visible");
+}
+
+function toggleMonthList() {
+var monthList = document.getElementById("month-list");
+var calendarContainer = document.getElementById("calendar-container");
+
+if (monthList.classList.contains("hidden")) {
+monthList.classList.remove("hidden");
+monthList.classList.add("visible");
+
+calendarContainer.classList.remove("visible-calendar");
+calendarContainer.classList.add("hidden");
+} else {
+monthList.classList.remove("visible");
+monthList.classList.add("hidden");
+}
+}
+
+function importMonthlyCalendar() {
+var fileInput = document.createElement("input");
+fileInput.type = "file";
+fileInput.accept = ".json";
+fileInput.addEventListener("change", handleFileSelect, false);
+fileInput.click();
+}
+
+function handleFileSelect(event) {
+var file = event.target.files[0];
+var reader = new FileReader();
+reader.onload = function (e) {
+var contents = e.target.result;
+console.log("File contents: " + contents);
+
+
+importCalendarFromJSON(contents);
+};
+reader.readAsText(file);
+}
+
+function importCalendarFromJSON(jsonData) {
+var calendarData = JSON.parse(jsonData);
+
+var calendarContainer = document.getElementById("calendar-container");
+calendarContainer.classList.add("visible-calendar");
+calendarContainer.classList.remove("hidden");
+
+var calendar = document.getElementById("calendar");
+calendar.innerHTML = ""; 
+
+calendarData.forEach(function (dayData) {
+var dayElement = document.createElement("div");
+dayElement.classList.add("calendar-day");
+dayElement.textContent = dayData.day;
+
+var selectedItems = document.createElement("div");
+selectedItems.classList.add("selected-items");
+selectedItems.dataset.day = dayData.day;
+
+dayData.items.forEach(function (item) {
+var selectedItem = document.createElement("div");
+selectedItem.textContent = item;
+selectedItems.appendChild(selectedItem);
+});
+
+dayElement.appendChild(selectedItems);
+calendar.appendChild(dayElement);
+});
+}
+
+
+
+function renderCalendar(data) {
+var calendar = document.getElementById("calendar");
+calendar.innerHTML = "";
+
+data.forEach(function (dayData) {
+var dayElement = document.createElement("div");
+dayElement.classList.add("calendar-day");
+dayElement.textContent = dayData.day;
+dayElement.addEventListener("click", showSelectionBubble);
+dayElement.innerHTML += '<div class="selected-items" data-day="' + dayData.day + '"></div>';
+
+var selectedItems = dayElement.querySelector(".selected-items");
+dayData.items.forEach(function (item) {
+var selectedItem = document.createElement("div");
+selectedItem.textContent = item;
+selectedItems.appendChild(selectedItem);
+});
+
+calendar.appendChild(dayElement);
+});
+
+toggleMonthList(); 
+}
+
+
+function showSelectionBubble(event) {
+    
+var dayElement = event.currentTarget;
+var bubble = document.createElement("div");
+var dayElement = event.currentTarget;
+dayElement.classList.add("has-content");
+bubble.classList.add("selection-bubble");
+bubble.style.left = event.clientX + "px";
+bubble.style.top = event.clientY + "px";
+
+
+
+var items = [
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" },
+{ name: "Lorem ipsum dolor sit amet.", image: "images/lipsum_template.gif" }
+]; // Liste des objets sélectionnables
+var list = document.createElement("ul");
+
+items.forEach(function (item) {
+var listItem = document.createElement("li");
+listItem.textContent = item.name;
+listItem.addEventListener("click", function () {
+    selectObject(dayElement, item);
+});
+
+var image = document.createElement("img");
+image.classList.add("max-size-image"); 
+image.src = item.image;
+image.alt = item.name;
+
+listItem.appendChild(image);
+list.appendChild(listItem);
+});
+
+bubble.appendChild(list);
+document.body.appendChild(bubble);
+
+setTimeout(function () {
+bubble.classList.add("visible");
+}, 10);
+
+event.stopPropagation();
+}
+
+
+function selectObject(dayElement, item) {
+var bubble = dayElement.querySelector(".selection-bubble");
+var selectedItems = dayElement.querySelector(".selected-items");
+var selectedItem = document.createElement("div");
+selectedItem.textContent = item.name; 
+selectedItems.appendChild(selectedItem);
+bubble.parentNode.removeChild(bubble);
+
+var dayNumber = dayElement.textContent;
+var dayTextElement = document.createElement("div");
+dayTextElement.classList.add("selected-item-text");
+dayTextElement.textContent = item.name;
+dayElement.appendChild(dayTextElement);
+}
+
+function confirmCalendar() {
+var calendarContainer = document.getElementById("calendar-container");
+calendarContainer.classList.remove("visible-calendar");
+calendarContainer.classList.add("hidden");
+
+var selectedItems = document.querySelectorAll(".selected-items");
+var data = [];
+
+selectedItems.forEach(function (selectedItem) {
+var day = selectedItem.dataset.day;
+var items = [];
+var itemElements = selectedItem.querySelectorAll("div");
+itemElements.forEach(function (itemElement) {
+items.push(itemElement.textContent);
+});
+data.push({ day: day, items: items });
+});
+
+saveCalendarData(data);
+}
+
+function saveCalendarData(data) {
+var jsonData = JSON.stringify(data);
+
+var downloadLink = document.createElement("a");
+downloadLink.href = "data:text/json;charset=utf-8," + encodeURIComponent(jsonData);
+downloadLink.download = "calendar_data.json";
+
+downloadLink.click();
+}
+
+
+function showCalendar(month) {
+    toggleMonthList();
+
+    var calendarContainer = document.getElementById("calendar-container");
+    calendarContainer.classList.remove("hidden");
+    calendarContainer.classList.add("visible-calendar");
+
+    var calendar = document.getElementById("calendar");
+    calendar.innerHTML = ""; 
+
+    var date = new Date(); 
+    var year = date.getFullYear(); 
+
+    var monthIndex = getMonthIndex(month); 
+    var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+    // Crée les éléments de jour du calendrier
+    for (var i = 1; i <= daysInMonth; i++) {
+        var dayElement = document.createElement("div");
+        dayElement.classList.add("calendar-day");
+        dayElement.textContent = i;
+        dayElement.addEventListener("click", showSelectionBubble);
+        dayElement.innerHTML += '<div class="selected-items" data-day="' + i + '"></div>';
+        calendar.appendChild(dayElement);
+    }
+}
+
+function getMonthIndex(month) {
+    var monthNames = [
+        "january", "february", "march", "april", "may", "june",
+        "july", "august", "september", "october", "november", "december"
+    ];
+    return monthNames.indexOf(month.toLowerCase());
+}
+
+document.addEventListener("click", function (event) {
+var bubble = document.querySelector(".selection-bubble");
+if (bubble && !bubble.contains(event.target)) {
+bubble.parentNode.removeChild(bubble);
+}
+});</script>
+
+    <div class="navbar">
+        <span class="navbar-text">Calendar</span>
+    </div>
+
+    <div class="login-page">
+        <div id="login-buttons">
+            <div class="login-option create-calendar" onclick="hideButtons(); toggleMonthList();">
+                Create the calendar
+            </div>
+            <div class="login-option import-calendar" onclick="hideButtons(); importMonthlyCalendar();">
+                Import the calendar
+            </div>
+        </div>
+        <div id="month-list" class="month-list hidden">
+            <div class="month-list-item" onclick="showCalendar('january')">January</div>
+            <div class="month-list-item" onclick="showCalendar('february')">February</div>
+            <div class="month-list-item" onclick="showCalendar('march')">March</div>
+            <div class="month-list-item" onclick="showCalendar('april')">April</div>
+            <div class="month-list-item" onclick="showCalendar('may')">May</div>
+            <div class="month-list-item" onclick="showCalendar('june')">June</div>
+            <div class="month-list-item" onclick="showCalendar('july')">July</div>
+            <div class="month-list-item" onclick="showCalendar('august')">August</div>
+            <div class="month-list-item" onclick="showCalendar('september')">September</div>
+            <div class="month-list-item" onclick="showCalendar('october')">October</div>
+            <div class="month-list-item" onclick="showCalendar('november')">November</div>
+            <div class="month-list-item" onclick="showCalendar('december')">December</div>
+        </div>
+        <div id="calendar-container" class="calendar-container hidden">
+            <div id="calendar" class="calendar"></div>
+            <button onclick="confirmCalendar()">Confirm and Save</button>
+        </div>  
+    </div>
+</body>
+</html>
